@@ -14,7 +14,7 @@ export default function Navbar() {
         <div className="flex flex-wrap items-center gap-3 md:gap-6 text-sm md:text-base">
           <a
             href="/dashboard"
-            className="text-gray-300 hover:text-white transition"
+            className="text-white font-semibold hover:opacity-80 transition"
           >
             Dashboard
           </a>
@@ -41,10 +41,17 @@ export default function Navbar() {
           </a>
 
           <a
+            href="/login"
+            className="text-gray-300 hover:text-white transition"
+          >
+            Login
+          </a>
+
+          <a
             href="/signup"
             className="bg-white text-black px-4 py-2 rounded-xl font-semibold hover:scale-105 transition"
           >
-            Get Started
+            Sign Up
           </a>
         </div>
       </div>

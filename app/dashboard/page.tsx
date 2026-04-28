@@ -8,19 +8,11 @@ export default function DashboardPage() {
   useEffect(() => {
     const user = localStorage.getItem("studyai_user");
 
-    if (!user) {
-      window.location.href = "/login";
-      return;
+    if (user) {
+      const parsedUser = JSON.parse(user);
+      setUserName(parsedUser.name);
     }
-
-    const parsedUser = JSON.parse(user);
-    setUserName(parsedUser.name);
   }, []);
-
-  const handleLogout = () => {
-    localStorage.removeItem("studyai_user");
-    window.location.href = "/";
-  };
 
   return (
     <main className="min-h-screen bg-black text-white px-6 py-10">
@@ -28,7 +20,7 @@ export default function DashboardPage() {
       <header className="flex flex-col md:flex-row justify-between items-center mb-12 gap-4">
         <div>
           <h1 className="text-4xl font-bold">
-            Welcome, {userName || "Student"} 👋
+            Welcome{userName ? `, ${userName}` : ""} 👋
           </h1>
 
           <p className="text-gray-400 mt-2">
@@ -36,12 +28,24 @@ export default function DashboardPage() {
           </p>
         </div>
 
-        <button
-          onClick={handleLogout}
-          className="border border-white px-5 py-2 rounded-xl hover:bg-white hover:text-black transition"
-        >
-          Logout
-        </button>
+        {!userName ? (
+          <a
+            href="/signup"
+            className="bg-white text-black px-5 py-2 rounded-xl font-semibold hover:scale-105 transition"
+          >
+            Create Free Account
+          </a>
+        ) : (
+          <button
+            onClick={() => {
+              localStorage.removeItem("studyai_user");
+              window.location.reload();
+            }}
+            className="border border-white px-5 py-2 rounded-xl hover:bg-white hover:text-black transition"
+          >
+            Logout
+          </button>
+        )}
       </header>
 
       {/* Feature Cards */}
