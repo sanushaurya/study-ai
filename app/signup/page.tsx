@@ -19,28 +19,22 @@ export default function SignupPage() {
     setMessage("");
 
     try {
-      const response = await fetch("/api/signup", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name,
-          email,
-          password,
-        }),
-      });
+      const user = {
+        name,
+        email,
+        password,
+      };
 
-      const data = await response.json();
+      localStorage.setItem(
+        "studyai_user",
+        JSON.stringify(user)
+      );
 
-      if (response.ok) {
-        setMessage("Account created successfully! Redirecting...");
-        setTimeout(() => {
-          window.location.href = "/login";
-        }, 1500);
-      } else {
-        setMessage(data.error || "Signup failed.");
-      }
+      setMessage("Account created successfully! Redirecting...");
+
+      setTimeout(() => {
+        window.location.href = "/dashboard";
+      }, 1000);
     } catch (error) {
       console.error(error);
       setMessage("Something went wrong.");

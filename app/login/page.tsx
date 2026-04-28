@@ -18,23 +18,23 @@ export default function LoginPage() {
     setMessage("");
 
     try {
-      const response = await fetch("/api/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email,
-          password,
-        }),
-      });
+      const storedUser = localStorage.getItem("studyai_user");
 
-      const data = await response.json();
+      if (!storedUser) {
+        setMessage("No account found. Please sign up first.");
+        setLoading(false);
+        return;
+      }
 
-      if (response.ok) {
+      const user = JSON.parse(storedUser);
+
+      if (
+        user.email === email &&
+        user.password === password
+      ) {
         localStorage.setItem(
           "studyai_user",
-          JSON.stringify(data.user)
+          JSON.stringify(user)
         );
 
         setMessage("Login successful! Redirecting...");
@@ -43,7 +43,7 @@ export default function LoginPage() {
           window.location.href = "/dashboard";
         }, 1000);
       } else {
-        setMessage(data.error || "Login failed.");
+        setMessage("Invalid credentials.");
       }
     } catch (error) {
       console.error(error);
