@@ -2,14 +2,64 @@ import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
   try {
-    const { text } = await req.json();
+    const { topic, pdfText, difficulty } = await req.json();
 
-    if (!text) {
+    const sourceMaterial = pdfText?.trim()
+      ? pdfText
+      : topic?.trim();
+
+    if (!sourceMaterial) {
       return NextResponse.json(
-        { error: "No text provided" },
+        {
+          error:
+            "Topic or PDF content is required.",
+        },
         { status: 400 }
       );
     }
+
+    const sourceType = pdfText?.trim()
+      ? "uploaded study material"
+      : "topic";
+
+    const prompt = `
+You are StudyAI’s elite Quiz Architect — a world-class AI learning designer trusted to create highly engaging, retention-optimized quizzes.
+
+Your mission:
+Generate exactly 5 ${difficulty}-level multiple-choice questions based on this ${sourceType}:
+
+"${sourceMaterial}"
+
+STRICT REQUIREMENTS:
+- Return ONLY valid raw JSON
+- No markdown
+- No code blocks
+- No extra text
+- Output must be a JSON array only
+
+REQUIRED JSON FORMAT:
+[
+  {
+    "question": "string",
+    "options": {
+      "A": "string",
+      "B": "string",
+      "C": "string",
+      "D": "string"
+    },
+    "correctAnswer": "A",
+    "explanation": "string"
+  }
+]
+
+QUALITY STANDARDS:
+- Prioritize conceptual understanding
+- Wrong answers must be plausible
+- Optimize for exam prep + active recall
+- Questions should feel like Duolingo + elite tutor
+- If PDF material is provided, quiz ONLY from provided material
+- No outside assumptions
+`;
 
     const response = await fetch(
       "https://openrouter.ai/api/v1/chat/completions",
@@ -18,39 +68,13 @@ export async function POST(req: Request) {
         headers: {
           Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
           "Content-Type": "application/json",
-          "HTTP-Referer": "http://localhost:3000",
-          "X-Title": "StudyAI",
         },
         body: JSON.stringify({
           model: "openai/gpt-3.5-turbo",
           messages: [
             {
-              role: "system",
-              content: `
-You are StudyAI Quiz Engine.
-
-Generate a professional quiz from study material.
-
-FORMAT:
-
-## Quiz Questions
-
-1. Question
-A)
-B)
-C)
-D)
-Answer:
-Explanation:
-
-Generate 5 high-quality MCQs.
-Mix conceptual + factual + application questions.
-Make it beginner-friendly but educational.
-`,
-            },
-            {
               role: "user",
-              content: `Generate quiz from:\n\n${text}`,
+              content: prompt,
             },
           ],
         }),
@@ -59,18 +83,38 @@ Make it beginner-friendly but educational.
 
     const data = await response.json();
 
-    console.log("Quiz Response:", data);
+    const rawContent =
+      data.choices?.[0]?.message?.content || "";
 
-    const quiz =
-      data?.choices?.[0]?.message?.content ||
-      "No quiz generated.";
+    let parsedQuiz;
 
-    return NextResponse.json({ quiz });
+    try {
+      parsedQuiz = JSON.parse(rawContent);
+    } catch (parseError) {
+      console.error(
+        "Quiz JSON Parse Error:",
+        parseError
+      );
+
+      return NextResponse.json(
+        {
+          error:
+            "Failed to generate structured quiz. Try again.",
+        },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json({
+      quiz: parsedQuiz,
+    });
   } catch (error) {
-    console.error("Quiz Error:", error);
+    console.error("Quiz API Error:", error);
 
     return NextResponse.json(
-      { error: "Something went wrong." },
+      {
+        error: "Something went wrong.",
+      },
       { status: 500 }
     );
   }
