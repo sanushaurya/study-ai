@@ -19,7 +19,6 @@ export async function POST(req: Request) {
     const loadingTask = pdfjsLib.getDocument({
       data: new Uint8Array(arrayBuffer),
       useWorkerFetch: false,
-      isEvalSupported: false,
       useSystemFonts: true,
     });
 

@@ -64,7 +64,7 @@ export default function QuizPage() {
       formData.append("file", file);
 
       const response = await fetch(
-        "http://127.0.0.1:5001/extract-pdf",
+        "https://study-ai-rag.onrender.com/extract-pdf",
         {
           method: "POST",
           body: formData,
